@@ -1,0 +1,218 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "",
+    "Metadata": {
+
+    },
+    "Parameters": {"myvpccidr": {
+        "Description": "choose my own cidr",
+        "Type": "[String|Number|CommaDelimitedList]",
+        "Default": "10.200.0.0/16"
+    },
+    "AVZ1": {
+        "Description": "choose my own AZ",
+        "Type": "AWS::EC2::AvailabilityZone::Name"
+    },
+    "AVZ2": {
+        "Description": "choose my own AZ",
+        "Type": "AWS::EC2::AvailabilityZone::Name"
+      },
+      "webcidr1": {
+          "Description": "choose my own cidr",
+          "Type": "String",
+          "Default": "10.200.1.0/24"
+      },
+      "webcidr2": {
+          "Description": "choose my own cidr",
+          "Type": "String",
+          "Default": "10.200.2.0/24"
+        },
+        "appcidr1": {
+            "Description": "choose my own cidr",
+            "Type": "String",
+            "Default": "10.200.3.0/24"
+          },
+          "appcidr2": {
+              "Description": "choose my own cidr",
+              "Type": "String",
+              "Default": "10.200.4.0/24"
+            },
+            "datacidr1": {
+                "Description": "choose my own cidr",
+                "Type": "String",
+                "Default": "10.200.5.0/24"
+              }
+            },
+    "Mappings": {
+
+    },
+    "Conditions": {
+
+    },
+    "Resources": {"myvpc": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": { "Ref": "myvpccidr" },
+        "Tags": [{ "Key": "Name", "Value":  "myvpc" }]
+      }
+    },
+    "websubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": { "Ref": "AVZ1" },
+        "VpcId": { "Ref": "myvpc" },
+        "CidrBlock": { "Ref": "myvpccidr" },
+        "Tags": [{ "Key": "Name", "Value":  "websubnet1" }]
+      }
+    },
+      "websubnet2": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "AVZ2" },
+          "VpcId": { "Ref": "myvpc" },
+          "CidrBlock": { "Ref": "myvpccidr" },
+          "Tags": [{ "Key": "Name", "Value":  "websubnet2" }]
+    }
+  },
+    "appsubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": { "Ref": "AVZ1" },
+        "VpcId": { "Ref": "myvpc" },
+        "CidrBlock": { "Ref": "myvpccidr" },
+        "Tags": [{ "Key": "Name", "Value":  "appsubnet1" }]
+      }
+    },
+      "appsubnet2": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "AVZ2" },
+          "VpcId": { "Ref": "myvpc" },
+          "CidrBlock": { "Ref": "myvpccidr" },
+          "Tags": [{ "Key": "Name", "Value":  "appsubnet2" }]
+        }
+      },
+        "datasubnet": {
+          "Type": "AWS::EC2::Subnet",
+          "Properties": {
+            "AvailabilityZone": { "Ref": "AVZ1" },
+            "VpcId": { "Ref": "myvpc" },
+            "CidrBlock": { "Ref": "myvpccidr" },
+            "Tags": [{ "Key": "Name", "Value":  "datasubnet" }]
+          }
+        },
+        "MYIGW": {
+          "Type": "AWS::EC2::InternetGateway",
+          "Properties": {
+            "Tags": [{ "Key": "Name", "Value":  "MYIGW" }]
+          }
+        },
+        "AttachGateway": {
+          "Type": "AWS::EC2::VPCGatewayAttachment",
+          "Properties": {
+            "VpcId": { "Ref": "myvpc" },
+            "InternetGatewayId": { "Ref": "MYIGW" }
+          }
+        },
+        "webRTB": {
+          "Type": "AWS::EC2::RouteTable",
+          "Properties": {
+            "VpcId": { "Ref": "myvpc" },
+            "Tags": [{ "Key": "Name", "Value":  "webRTB" }]
+          }
+        },
+        "webRT": {
+          "Type": "AWS::EC2::Route",
+          "Properties": {
+            "RouteTableId": { "Ref": "webRTB" },
+            "DestinationCidrBlock": "0.0.0.0/0",
+            "GatewayId": { "Ref": "MYIGW" }
+          }
+        },
+        "webRTBASS1": {
+          "Type": "AWS::EC2::SubnetRouteTableAssociation",
+          "Properties": {
+            "SubnetId": { "Ref": "websubnet1" },
+            "RouteTableId": { "Ref": "webRTB" }
+          }
+        },
+        "webRTBASS2": {
+          "Type": "AWS::EC2::SubnetRouteTableAssociation",
+          "Properties": {
+            "SubnetId": { "Ref": "websubnet2" },
+            "RouteTableId": { "Ref": "webRTB" }
+          }
+        },
+        "appRTB": {
+          "Type": "AWS::EC2::RouteTable",
+          "Properties": {
+            "VpcId": { "Ref": "myvpc" },
+            "Tags": [{ "Key": "Name", "Value":  "appRTB" }]
+      }
+    },
+    "appRT": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": { "Ref": "appRTB" },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": { "Ref": "MYIGW" }
+      }
+    },
+    "appRTBASS1": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "appsubnet1" },
+        "RouteTableId": { "Ref": "appRTB" }
+      }
+    },
+    "appRTBASS2": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "appsubnet2" },
+        "RouteTableId": { "Ref": "appRTB" }
+      }
+    },
+    "dataRTB": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": { "Ref": "myvpc" },
+        "Tags": [{ "Key": "Name", "Value":  "dataRTB" }]
+      }
+    },
+    "dataRT": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": { "Ref": "appRTB" },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": { "Ref": "MYIGW" }
+      }
+    },
+    "dataRTBASS": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "datasubnet" },
+        "RouteTableId": { "Ref": "dataRTB" }
+      }
+  },
+  "websecgrp" : {
+    "Type" : "AWS::EC2::SecurityGroup",
+    "Properties" : {
+      "GroupDescription" : "choose my SG",
+      "SecurityGroupIngress" : [ {
+        "IpProtocol" : "tcp",
+        "FromPort" : "80",
+        "ToPort" : "80",
+        "CidrIp" : "0.0.0.0/0" },{
+        "IpProtocol" : "tcp",
+        "FromPort" : "22",
+        "ToPort" : "22",
+        "CidrIp" : "0.0.0.0/0"}],
+      "VpcId" : { "Ref": "myvpc" },
+      "Tags" :  [{ "Key": "Name", "Value":  "websecgrp" } ]
+    }
+  }
+},
+    "Outputs": {
+
+    }
+}
